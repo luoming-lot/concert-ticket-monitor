@@ -1,0 +1,40 @@
+# ============================================
+# 演唱会票务监控系统 - Python 依赖
+# ============================================
+
+# Web 框架
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.18
+
+# 数据库
+sqlalchemy==2.0.36
+aiosqlite==0.20.0
+
+# 浏览器自动化
+playwright==1.49.1
+
+# 任务调度
+apscheduler==3.10.4
+
+# 数据验证
+pydantic==2.10.3
+pydantic-settings==2.7.0
+python-dotenv==1.0.1
+
+# HTTP 客户端
+httpx==0.28.1
+
+# 认证
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.18
+
+# 邮件
+aiosmtplib==3.0.1
+
+# 日志
+loguru==0.7.3
+
+# 工具
+python-dateutil==2.9.0

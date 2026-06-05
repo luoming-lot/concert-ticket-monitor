@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  # ============ 后端服务 ============
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: concert-monitor-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app
+      - backend_data:/app/data
+      - backend_logs:/app/logs
+    environment:
+      - DATABASE_URL=sqlite:////app/data/concert_monitor.db
+    env_file:
+      - .env
+    networks:
+      - monitor-net
+
+  # ============ 前端服务 ============
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: concert-monitor-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - backend
+    networks:
+      - monitor-net
+
+volumes:
+  backend_data:
+  backend_logs:
+
+networks:
+  monitor-net:
+    driver: bridge
