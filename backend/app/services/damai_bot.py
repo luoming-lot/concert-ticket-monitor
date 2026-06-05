@@ -79,27 +79,19 @@ class DamaiBot:
 
     async def _launch_browser(self):
         """启动浏览器"""
-        from .scraper import ScraperService
-
-        pw = await asyncio.get_event_loop().run_in_executor(
-            None, lambda: __import__('playwright.async_api').async_api.async_playwright()
-        )
         from playwright.async_api import async_playwright
 
         self._playwright = await async_playwright().start()
 
-        # 查找 Chrome
+        # 查找 Chrome 可执行文件
         chrome_paths = [
             r"C:\Program Files\Google\Chrome\Application\chrome.exe",
             r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
             "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
             "/usr/bin/google-chrome",
+            "/usr/bin/chromium-browser",
         ]
-        chrome_path = None
-        for p in chrome_paths:
-            if os.path.exists(p):
-                chrome_path = p
-                break
+        chrome_path = next((p for p in chrome_paths if os.path.exists(p)), None)
 
         launch_args = [
             "--disable-blink-features=AutomationControlled",
@@ -109,24 +101,24 @@ class DamaiBot:
             "--window-size=1280,800",
         ]
 
+        if not self.headless:
+            # 非无头模式——用户需要看到浏览器扫码
+            launch_args.append("--auto-open-devtools-for-tabs")
+
+        launch_options = {"headless": self.headless, "args": launch_args}
+
+        # 优先使用本机 Chrome
         if chrome_path:
-            self._browser = await self._playwright.chromium.launch(
-                headless=self.headless,
-                executable_path=chrome_path,
-                args=launch_args,
-            )
+            self._add_log("info", f"Chrome位置: {chrome_path}")
+            launch_options["executable_path"] = chrome_path
         else:
+            self._add_log("warning", "未找到 Chrome，尝试 channel 方式...")
             try:
-                self._browser = await self._playwright.chromium.launch(
-                    headless=self.headless,
-                    channel="chrome",
-                    args=launch_args,
-                )
+                launch_options["channel"] = "chrome"
             except Exception:
-                self._browser = await self._playwright.chromium.launch(
-                    headless=self.headless,
-                    args=launch_args,
-                )
+                pass
+
+        self._browser = await self._playwright.chromium.launch(**launch_options)
 
         self._context = await self._browser.new_context(
             viewport={"width": 1280, "height": 800},
@@ -222,8 +214,12 @@ class DamaiBot:
                 await asyncio.sleep(300)  # 5分钟
 
         except Exception as e:
+            import traceback
+            tb = traceback.format_exc()
             self._add_log("error", f"流程异常: {e}")
+            self._add_log("error", f"详细错误:\n{tb[-500:]}")
         finally:
+            # 自动提交模式才关浏览器，否则保持打开让用户看到状态
             if self.config.if_commit_order:
                 await self._close_browser()
             self.stage = "done"
