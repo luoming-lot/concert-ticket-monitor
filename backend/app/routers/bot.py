@@ -81,8 +81,18 @@ async def start_bot(req: BotStartRequest = BotStartRequest()):
 
     bot = create_bot(config, headless=req.headless)
 
-    # 在后台启动
-    asyncio.create_task(bot.run())
+    # 在后台线程中运行（独立事件循环，避免和 uvicorn 冲突）
+    import threading
+    def _run_in_thread():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(bot.run())
+        finally:
+            loop.close()
+
+    t = threading.Thread(target=_run_in_thread, daemon=True)
+    t.start()
 
     log.info("抢票引擎已启动")
     return {

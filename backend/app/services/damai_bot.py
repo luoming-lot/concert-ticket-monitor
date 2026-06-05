@@ -526,8 +526,7 @@ class DamaiBot:
     def stop(self):
         """停止抢票"""
         self.running = False
-        self._add_log("warning", "用户手动停止")
-        asyncio.ensure_future(self._close_browser())
+        self._add_log("warning", "用户手动停止 - 浏览器将在当前操作完成后关闭")
 
     def get_status(self) -> dict:
         """获取当前状态"""
