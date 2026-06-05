@@ -81,7 +81,9 @@ class DamaiBot:
         """启动浏览器"""
         from playwright.async_api import async_playwright
 
+        self._add_log("info", "步骤1: 启动Playwright...")
         self._playwright = await async_playwright().start()
+        self._add_log("info", "步骤2: Playwright已启动，查找Chrome...")
 
         # 查找 Chrome 可执行文件
         chrome_paths = [
@@ -102,23 +104,19 @@ class DamaiBot:
         ]
 
         if not self.headless:
-            # 非无头模式——用户需要看到浏览器扫码
             launch_args.append("--auto-open-devtools-for-tabs")
 
         launch_options = {"headless": self.headless, "args": launch_args}
 
-        # 优先使用本机 Chrome
         if chrome_path:
-            self._add_log("info", f"Chrome位置: {chrome_path}")
+            self._add_log("info", f"步骤3: 找到Chrome: {chrome_path}")
             launch_options["executable_path"] = chrome_path
         else:
-            self._add_log("warning", "未找到 Chrome，尝试 channel 方式...")
-            try:
-                launch_options["channel"] = "chrome"
-            except Exception:
-                pass
+            self._add_log("warning", "步骤3: 未找到Chrome，使用默认方式...")
 
+        self._add_log("info", "步骤4: 启动Chrome浏览器...")
         self._browser = await self._playwright.chromium.launch(**launch_options)
+        self._add_log("info", "步骤5: Chrome已启动，创建上下文...")
 
         self._context = await self._browser.new_context(
             viewport={"width": 1280, "height": 800},
@@ -174,9 +172,12 @@ class DamaiBot:
             self._add_log("info", f"观演人: {', '.join(self.config.users)}")
             self._add_log("info", f"快速模式: {'开启' if self.config.fast_mode else '关闭'}")
             self._add_log("info", f"自动提交: {'开启' if self.config.if_commit_order else '关闭'}")
+            self._add_log("info", f"无头模式: {self.headless}")
             self._add_log("info", "=" * 50)
 
+            self._add_log("info", "正在启动浏览器...")
             await self._launch_browser()
+            self._add_log("info", "浏览器启动完成")
 
             # 阶段2：登录
             self.stage = "login"
