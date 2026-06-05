@@ -71,7 +71,9 @@ export const concertAPI = {
 export const monitorAPI = {
   getStatus: () => api.get('/monitor/status'),
   start: (data) => api.post('/monitor/start', data),
+  startAll: () => api.post('/monitor/start-all'),
   stop: (id) => api.post(`/monitor/stop/${id}`),
+  stopAll: () => api.post('/monitor/stop-all'),
   getLogs: (params) => api.get('/monitor/logs', { params }),
   getHistory: (params) => api.get('/monitor/history', { params }),
 }

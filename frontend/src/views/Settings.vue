@@ -3,19 +3,20 @@
     <el-tabs v-model="activeTab" type="border-card">
       <!-- 基本设置 -->
       <el-tab-pane label="基本设置" name="basic">
-        <el-form :model="basicForm" label-width="140px">
+        <el-form :model="basicForm" label-width="150px">
           <el-form-item label="默认监控间隔(秒)">
-            <el-input-number v-model="basicForm.interval" :min="10" :max="3600" />
+            <el-input-number v-model="basicForm.monitor_interval" :min="10" :max="3600" />
             <span class="form-tip">建议值：30-120秒</span>
           </el-form-item>
           <el-form-item label="浏览器超时(毫秒)">
-            <el-input-number v-model="basicForm.timeout" :min="5000" :max="120000" :step="1000" />
+            <el-input-number v-model="basicForm.browser_timeout" :min="5000" :max="120000" :step="1000" />
           </el-form-item>
           <el-form-item label="无头模式">
             <el-switch v-model="basicForm.headless" />
+            <span class="form-tip">关闭可在采集时看到浏览器窗口</span>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="saveBasic">保存设置</el-button>
+            <el-button type="primary" :loading="saving" @click="saveBasic">保存设置</el-button>
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -24,20 +25,23 @@
       <el-tab-pane label="邮件通知" name="email">
         <el-form :model="emailForm" label-width="120px">
           <el-form-item label="SMTP服务器">
-            <el-input v-model="emailForm.host" placeholder="smtp.qq.com" />
+            <el-input v-model="emailForm.smtp_host" placeholder="smtp.qq.com" />
           </el-form-item>
           <el-form-item label="SMTP端口">
-            <el-input-number v-model="emailForm.port" :min="1" :max="65535" />
+            <el-input-number v-model="emailForm.smtp_port" :min="1" :max="65535" />
           </el-form-item>
           <el-form-item label="发件邮箱">
-            <el-input v-model="emailForm.user" placeholder="your-email@qq.com" />
+            <el-input v-model="emailForm.smtp_user" placeholder="your-email@qq.com" />
           </el-form-item>
           <el-form-item label="授权码/密码">
-            <el-input v-model="emailForm.password" type="password" show-password />
+            <el-input v-model="emailForm.smtp_password" type="password" show-password />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="saveEmail">保存设置</el-button>
-            <el-button @click="testEmail">测试发送</el-button>
+            <el-input v-model="emailForm.test_email" placeholder="测试接收邮箱" style="width: 240px" />
+            <el-button style="margin-left: 8px" :loading="testing.email" @click="testEmail">测试发送</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" :loading="saving" @click="saveEmail">保存设置</el-button>
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -46,11 +50,11 @@
       <el-tab-pane label="企业微信" name="wecom">
         <el-form :model="wecomForm" label-width="140px">
           <el-form-item label="Webhook URL">
-            <el-input v-model="wecomForm.webhook" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." />
+            <el-input v-model="wecomForm.wecom_webhook" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="saveWecom">保存设置</el-button>
-            <el-button @click="testWecom">测试发送</el-button>
+            <el-button type="primary" :loading="saving" @click="saveWecom">保存设置</el-button>
+            <el-button :loading="testing.wecom" @click="testWecom">测试发送</el-button>
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -59,14 +63,14 @@
       <el-tab-pane label="钉钉机器人" name="dingtalk">
         <el-form :model="dingtalkForm" label-width="140px">
           <el-form-item label="Webhook URL">
-            <el-input v-model="dingtalkForm.webhook" placeholder="https://oapi.dingtalk.com/robot/send?access_token=..." />
+            <el-input v-model="dingtalkForm.dingtalk_webhook" placeholder="https://oapi.dingtalk.com/robot/send?access_token=..." />
           </el-form-item>
           <el-form-item label="加签密钥">
-            <el-input v-model="dingtalkForm.secret" placeholder="SEC..." />
+            <el-input v-model="dingtalkForm.dingtalk_secret" placeholder="SEC..." />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="saveDingtalk">保存设置</el-button>
-            <el-button @click="testDingtalk">测试发送</el-button>
+            <el-button type="primary" :loading="saving" @click="saveDingtalk">保存设置</el-button>
+            <el-button :loading="testing.dingtalk" @click="testDingtalk">测试发送</el-button>
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -75,60 +79,142 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { settingsAPI } from '@/api'
 
 const activeTab = ref('basic')
+const saving = ref(false)
+const testing = reactive({ email: false, wecom: false, dingtalk: false })
 
 const basicForm = reactive({
-  interval: 60,
-  timeout: 30000,
+  monitor_interval: 60,
+  browser_timeout: 30000,
   headless: true,
 })
 
 const emailForm = reactive({
-  host: 'smtp.qq.com',
-  port: 587,
-  user: '',
-  password: '',
+  smtp_host: '',
+  smtp_port: 587,
+  smtp_user: '',
+  smtp_password: '',
+  test_email: '',
 })
 
 const wecomForm = reactive({
-  webhook: '',
+  wecom_webhook: '',
 })
 
 const dingtalkForm = reactive({
-  webhook: '',
-  secret: '',
+  dingtalk_webhook: '',
+  dingtalk_secret: '',
 })
 
+async function loadSettings() {
+  try {
+    const res = await settingsAPI.get()
+    basicForm.monitor_interval = parseInt(res.monitor_interval) || 60
+    basicForm.browser_timeout = parseInt(res.browser_timeout) || 30000
+    basicForm.headless = res.headless === 'true' || res.headless === true
+    emailForm.smtp_host = res.smtp_host || ''
+    emailForm.smtp_port = parseInt(res.smtp_port) || 587
+    emailForm.smtp_user = res.smtp_user || ''
+    emailForm.smtp_password = res.smtp_password || ''
+    wecomForm.wecom_webhook = res.wecom_webhook || ''
+    dingtalkForm.dingtalk_webhook = res.dingtalk_webhook || ''
+    dingtalkForm.dingtalk_secret = res.dingtalk_secret || ''
+  } catch (e) {
+    // 首次加载可能为空，使用默认值
+  }
+}
+
+async function saveSettings(data) {
+  saving.value = true
+  try {
+    await settingsAPI.update(data)
+    ElMessage.success('设置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  } finally {
+    saving.value = false
+  }
+}
+
 function saveBasic() {
-  ElMessage.success('基本设置已保存（功能开发中）')
+  saveSettings({
+    monitor_interval: basicForm.monitor_interval,
+    browser_timeout: basicForm.browser_timeout,
+    headless: basicForm.headless,
+  })
 }
 
 function saveEmail() {
-  ElMessage.success('邮件设置已保存（功能开发中）')
+  saveSettings({
+    smtp_host: emailForm.smtp_host,
+    smtp_port: emailForm.smtp_port,
+    smtp_user: emailForm.smtp_user,
+    smtp_password: emailForm.smtp_password,
+  })
 }
 
 function saveWecom() {
-  ElMessage.success('企业微信设置已保存（功能开发中）')
+  saveSettings({ wecom_webhook: wecomForm.wecom_webhook })
 }
 
 function saveDingtalk() {
-  ElMessage.success('钉钉设置已保存（功能开发中）')
+  saveSettings({
+    dingtalk_webhook: dingtalkForm.dingtalk_webhook,
+    dingtalk_secret: dingtalkForm.dingtalk_secret,
+  })
 }
 
-function testEmail() {
-  ElMessage.info('测试邮件功能开发中')
+async function testEmail() {
+  if (!emailForm.test_email) {
+    ElMessage.warning('请先输入测试接收邮箱')
+    return
+  }
+  testing.email = true
+  try {
+    await settingsAPI.testEmail({
+      to: emailForm.test_email,
+      subject: '演唱会票务监控系统 - 测试邮件',
+      body: '如果您收到此邮件，说明邮件通知配置成功！'
+    })
+    ElMessage.success('测试邮件已发送')
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.detail || '发送失败')
+  } finally {
+    testing.email = false
+  }
 }
 
-function testWecom() {
-  ElMessage.info('测试企业微信功能开发中')
+async function testWecom() {
+  testing.wecom = true
+  try {
+    await settingsAPI.testWecom({ message: '🎫 演唱会票务监控系统 - 测试消息' })
+    ElMessage.success('企业微信通知已发送')
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.detail || '发送失败')
+  } finally {
+    testing.wecom = false
+  }
 }
 
-function testDingtalk() {
-  ElMessage.info('测试钉钉功能开发中')
+async function testDingtalk() {
+  testing.dingtalk = true
+  try {
+    await settingsAPI.testDingtalk({ message: '🎫 演唱会票务监控系统 - 测试消息' })
+    ElMessage.success('钉钉通知已发送')
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.detail || '发送失败')
+  } finally {
+    testing.dingtalk = false
+  }
 }
+
+onMounted(() => {
+  loadSettings()
+})
 </script>
 
 <style scoped>
