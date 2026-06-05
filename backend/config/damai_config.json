@@ -1,0 +1,16 @@
+{
+  "target_url": "https://www.baidu.com/",
+  "users": [
+    "test"
+  ],
+  "index_url": "https://www.damai.cn/",
+  "login_url": "https://passport.damai.cn/login",
+  "city": "",
+  "dates": [],
+  "prices": [],
+  "fast_mode": false,
+  "if_listen": true,
+  "if_commit_order": false,
+  "max_retries": 3,
+  "page_load_delay": 2.0
+}
