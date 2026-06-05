@@ -20,35 +20,78 @@ from ..utils.logger import log
 class ScraperService:
     """Playwright 数据采集器"""
 
+    # 常见 Chrome 安装路径
+    _CHROME_PATHS = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Users\{}\AppData\Local\Google\Chrome\Application\chrome.exe",
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/usr/bin/google-chrome",
+        "/usr/bin/chromium-browser",
+        "/usr/bin/chromium",
+    ]
+
     def __init__(self):
         self.browser: Optional[Browser] = None
+        self._chrome_path: Optional[str] = None
+
+    def _find_chrome(self) -> Optional[str]:
+        """自动查找本机 Chrome 可执行文件"""
+        import os as _os, shutil as _shutil
+
+        username = _os.environ.get("USERNAME", _os.environ.get("USER", ""))
+        for pattern in self._CHROME_PATHS:
+            path = pattern.format(username) if "{}" in pattern else pattern
+            if _shutil.which(path) or _os.path.exists(path):
+                self._chrome_path = path
+                return path
+        return None
 
     async def _get_browser(self) -> Browser:
-        """获取或创建浏览器实例（优先使用本机 Chrome）"""
+        """获取或创建浏览器实例（自动查找本机 Chrome）"""
         if self.browser is None or not self.browser.is_connected():
             pw = await async_playwright().start()
             self._playwright = pw
-            # 优先使用系统已安装的 Chrome
+
+            chrome_path = self._find_chrome()
+            launch_args = [
+                "--disable-blink-features=AutomationControlled",
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-setuid-sandbox",
+            ]
+
+            if chrome_path:
+                log.info(f"使用本机 Chrome: {chrome_path}")
+                try:
+                    self.browser = await pw.chromium.launch(
+                        headless=settings.HEADLESS,
+                        executable_path=chrome_path,
+                        args=launch_args,
+                    )
+                    return self.browser
+                except Exception as e:
+                    log.warning(f"本机 Chrome 启动失败: {e}")
+
+            # Fallback: 尝试 channel="chrome"
             try:
+                log.info("尝试通过 Playwright channel 启动 Chrome...")
                 self.browser = await pw.chromium.launch(
                     headless=settings.HEADLESS,
                     channel="chrome",
-                    args=[
-                        "--disable-blink-features=AutomationControlled",
-                        "--no-sandbox",
-                        "--disable-dev-shm-usage",
-                    ],
+                    args=launch_args,
                 )
+                return self.browser
             except Exception:
-                # Fallback: 使用 Playwright 自带的 Chromium
-                self.browser = await pw.chromium.launch(
-                    headless=settings.HEADLESS,
-                    args=[
-                        "--disable-blink-features=AutomationControlled",
-                        "--no-sandbox",
-                        "--disable-dev-shm-usage",
-                    ],
-                )
+                pass
+
+            # 最后兜底: 使用 Playwright 自带的 Chromium（需要先 playwright install chromium）
+            log.warning("未找到 Chrome，尝试 Playwright 自带 Chromium...")
+            self.browser = await pw.chromium.launch(
+                headless=settings.HEADLESS,
+                args=launch_args,
+            )
         return self.browser
 
     async def close(self):

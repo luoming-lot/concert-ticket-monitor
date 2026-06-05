@@ -159,27 +159,57 @@ async def scrape_concert(concert_id: int, db: Session = Depends(get_db)):
         result = await scraper.scrape_concert(concert)
 
         # 记录日志
+        show_count = result.get('show_count', 0)
         log_entry = MonitorLog(
             concert_id=concert.id,
             level="success",
-            message=f"手动采集完成: 获取 {result.get('show_count', 0)} 个场次",
+            message=f"采集完成: 获取 {show_count} 个场次",
         )
         db.add(log_entry)
 
         concert.last_check = datetime.now()
         db.commit()
 
+        if show_count == 0:
+            return {
+                "success": True,
+                "data": result,
+                "warning": "未检测到场次信息，可能是页面结构特殊，请检查演出链接是否正确"
+            }
+
         return {"success": True, "data": result}
+
     except Exception as e:
-        log.error(f"采集失败 (concert_id={concert_id}): {e}")
+        error_msg = str(e)
+        # 翻译常见错误为中文
+        if "net::ERR_NAME_NOT_RESOLVED" in error_msg or "net::ERR_CONNECTION" in error_msg:
+            detail = "无法访问目标网站，请检查网络连接或URL是否正确"
+        elif "timeout" in error_msg.lower():
+            detail = "页面加载超时，目标网站响应太慢或被防火墙拦截"
+        elif "net::ERR_SSL" in error_msg or "certificate" in error_msg.lower():
+            detail = "SSL证书验证失败，链接格式可能有误"
+        elif "TargetClosedError" in error_msg or "Page crashed" in error_msg:
+            detail = "浏览器页面崩溃，可能是目标网站内存占用过大"
+        elif "net::ERR_BLOCKED_BY_CLIENT" in error_msg:
+            detail = "请求被浏览器拦截，可能需要关闭广告拦截插件"
+        elif "net::ERR_ABORTED" in error_msg:
+            detail = "页面加载被中断，目标网站可能有反爬检测"
+        elif "403" in error_msg or "Forbidden" in error_msg:
+            detail = "目标网站拒绝访问(403)，可能需要添加Cookie或更换User-Agent"
+        elif "Chrome" in error_msg or "chromium" in error_msg.lower() or "executable" in error_msg.lower():
+            detail = "未找到Chrome浏览器。请安装 Google Chrome 或运行: playwright install chromium"
+        else:
+            detail = f"采集失败: {error_msg[:200]}"
+
+        log.error(f"采集失败 (concert_id={concert_id}): {error_msg}")
         log_entry = MonitorLog(
             concert_id=concert.id,
             level="error",
-            message=f"采集失败: {str(e)}",
+            message=f"采集失败: {detail}",
         )
         db.add(log_entry)
         db.commit()
-        raise HTTPException(status_code=500, detail=f"采集失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=detail)
 
 
 @router.get("/{concert_id}/logs")
