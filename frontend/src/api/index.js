@@ -87,4 +87,13 @@ export const settingsAPI = {
   testDingtalk: (data) => api.post('/settings/test-dingtalk', data),
 }
 
+// --- 抢票控制 ---
+export const botAPI = {
+  getConfig: () => api.get('/bot/config'),
+  updateConfig: (data) => api.put('/bot/config', data),
+  getStatus: () => api.get('/bot/status'),
+  start: (data) => api.post('/bot/start', data),
+  stop: () => api.post('/bot/stop'),
+}
+
 export default api

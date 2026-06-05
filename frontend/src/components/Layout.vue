@@ -25,6 +25,10 @@
           <el-icon><Monitor /></el-icon>
           <span>监控管理</span>
         </el-menu-item>
+        <el-menu-item index="/ticket-bot">
+          <el-icon><ShoppingCart /></el-icon>
+          <span>大麦抢票</span>
+        </el-menu-item>
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
           <span>系统配置</span>

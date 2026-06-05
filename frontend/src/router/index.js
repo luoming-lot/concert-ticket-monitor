@@ -31,6 +31,12 @@ const routes = [
         meta: { title: '监控管理' },
       },
       {
+        path: 'ticket-bot',
+        name: 'TicketBot',
+        component: () => import('@/views/TicketBot.vue'),
+        meta: { title: '大麦抢票' },
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/views/Settings.vue'),

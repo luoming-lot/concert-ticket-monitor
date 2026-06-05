@@ -64,8 +64,10 @@ from .routers.auth import router as auth_router
 from .routers.concerts import router as concerts_router
 from .routers.monitor import router as monitor_router
 from .routers.settings_router import router as settings_api_router
+from .routers.bot import router as bot_router
 
 app.include_router(auth_router, prefix="/api/auth", tags=["认证"])
 app.include_router(concerts_router, prefix="/api/concerts", tags=["演出管理"])
 app.include_router(monitor_router, prefix="/api/monitor", tags=["监控管理"])
 app.include_router(settings_api_router, prefix="/api/settings", tags=["系统配置"])
+app.include_router(bot_router, prefix="/api/bot", tags=["抢票控制"])
