@@ -103,9 +103,12 @@ npm run dev
 
 **5. 访问系统**
 
-- 前端：http://localhost:5173
+| 环境 | 前端 | API 文档 |
+|------|------|----------|
+| 🌐 线上 | [frontend-jade-psi-51.vercel.app](https://frontend-jade-psi-51.vercel.app) | [backend-delta-six-95.vercel.app/docs](https://backend-delta-six-95.vercel.app/docs) |
+| 💻 本地 | http://localhost:5173 | http://localhost:8000/docs |
+
 - 仓库：https://github.com/luoming-lot/concert-ticket-monitor
-- API 文档：http://localhost:8000/docs
 - 默认账号：admin / admin123
 
 ### 方式二：Docker 部署
