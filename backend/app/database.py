@@ -10,9 +10,12 @@ from sqlalchemy.pool import StaticPool
 from .config import settings, get_db_path
 
 
-# 确保数据目录存在
+# 确保数据目录存在（Vercel /tmp 目录已存在）
+import os as _os
 db_path = get_db_path()
-db_path.parent.mkdir(parents=True, exist_ok=True)
+_is_vercel = bool(_os.getenv("VERCEL"))
+if not _is_vercel:
+    db_path.parent.mkdir(parents=True, exist_ok=True)
 
 # 创建引擎
 engine = create_engine(

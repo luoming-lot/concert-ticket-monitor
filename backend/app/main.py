@@ -13,12 +13,13 @@ from .utils.logger import log
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
-    # 启动时
     log.info(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION} 启动中...")
-    init_db()
-    log.info("✅ 数据库初始化完成")
+    try:
+        init_db()
+        log.info("✅ 数据库初始化完成")
+    except Exception as e:
+        log.error(f"数据库初始化失败: {e}")
     yield
-    # 关闭时
     log.info(f"🛑 {settings.APP_NAME} 正在关闭...")
 
 
@@ -36,14 +37,13 @@ _origins = [
     f"http://localhost:{settings.FRONTEND_PORT}",
     "http://127.0.0.1:5173",
     "http://localhost:5173",
+    "https://frontend-jade-psi-51.vercel.app",
 ]
 
 # prod/deploy: allow vercel & render preview domains
 _extra = os.getenv("EXTRA_CORS_ORIGINS", "")
 if _extra:
     _origins.extend(o.strip() for o in _extra.split(",") if o.strip())
-
-_origins.append("https://*.vercel.app")  # Vercel preview deploys
 
 app.add_middleware(
     CORSMiddleware,

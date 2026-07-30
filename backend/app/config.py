@@ -8,9 +8,20 @@ from typing import Optional
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
-# 加载 .env 文件
+# 加载 .env 文件（本地开发用，Vercel 上不存在也没关系）
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-load_dotenv(BASE_DIR / ".env")
+_ENV_FILE = BASE_DIR / ".env"
+if _ENV_FILE.exists():
+    load_dotenv(_ENV_FILE)
+
+# Vercel serverless 环境检测
+_IS_VERCEL = bool(os.getenv("VERCEL"))
+
+# Vercel 上数据库用 /tmp（唯一可写目录）
+if _IS_VERCEL:
+    _DEFAULT_DB = "sqlite:////tmp/concert_monitor.db"
+else:
+    _DEFAULT_DB = "sqlite:///./data/concert_monitor.db"
 
 
 class Settings(BaseSettings):
@@ -23,7 +34,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-to-a-random-string-at-least-32-chars"
 
     # --- 数据库 ---
-    DATABASE_URL: str = "sqlite:///./data/concert_monitor.db"
+    DATABASE_URL: str = _DEFAULT_DB
 
     # --- 监控 ---
     DEFAULT_MONITOR_INTERVAL: int = 60

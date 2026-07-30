@@ -1,5 +1,8 @@
 # 🎫 演唱会票务监控系统
 
+> 🌐 在线地址：[https://frontend-jade-psi-51.vercel.app](https://frontend-jade-psi-51.vercel.app)  
+> 📦 GitHub：[luoming-lot/concert-ticket-monitor](https://github.com/luoming-lot/concert-ticket-monitor)
+
 基于 FastAPI + Playwright + Vue3 的演唱会票务实时监控系统，支持多平台票务信息采集、库存/价格变化监控、多渠道通知推送。
 
 ## 技术栈
