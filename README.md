@@ -1,6 +1,6 @@
 # 🎫 演唱会票务监控系统
 
-> 🌐 在线地址：[https://frontend-jade-psi-51.vercel.app](https://frontend-jade-psi-51.vercel.app)  
+> 🌐 在线地址：[luoming-lot.github.io/concert-ticket-monitor](https://luoming-lot.github.io/concert-ticket-monitor)  
 > 📦 GitHub：[luoming-lot/concert-ticket-monitor](https://github.com/luoming-lot/concert-ticket-monitor)
 
 基于 FastAPI + Playwright + Vue3 的演唱会票务实时监控系统，支持多平台票务信息采集、库存/价格变化监控、多渠道通知推送。
@@ -103,8 +103,8 @@ npm run dev
 
 **5. 访问系统**
 
-- 🌐 前端：[frontend-jade-psi-51.vercel.app](https://frontend-jade-psi-51.vercel.app)
-- 📄 API 文档：[backend-delta-six-95.vercel.app/docs](https://backend-delta-six-95.vercel.app/docs)
+- 🌐 前端：[luoming-lot.github.io/concert-ticket-monitor](https://luoming-lot.github.io/concert-ticket-monitor)
+- 💻 后端需本地运行：`双击 start.bat` 或 `python -m uvicorn app.main:app --host 0.0.0.0 --port 8000`
 - 仓库：https://github.com/luoming-lot/concert-ticket-monitor
 - 默认账号：admin / admin123
 
