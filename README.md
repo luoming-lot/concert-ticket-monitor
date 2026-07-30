@@ -68,7 +68,7 @@ concert-ticket-monitor/
 **1. 克隆项目**
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/luoming-lot/concert-ticket-monitor.git
 cd concert-ticket-monitor
 ```
 
@@ -101,6 +101,7 @@ npm run dev
 **5. 访问系统**
 
 - 前端：http://localhost:5173
+- 仓库：https://github.com/luoming-lot/concert-ticket-monitor
 - API 文档：http://localhost:8000/docs
 - 默认账号：admin / admin123
 
