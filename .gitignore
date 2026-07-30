@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.env
+.venv/
+venv/
+ENV/
+
+# SQLite
+*.db
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+dist/
+.DS_Store
+*.local
+
+# Playwright
+playwright-report/
+test-results/
+
+# Docker
+.docker/
+
+# OS
+Thumbs.db

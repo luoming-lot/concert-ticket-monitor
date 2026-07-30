@@ -1,0 +1,20 @@
+{
+  "target_url": "https://detail.damai.cn/item.htm?spm=a2oeg.home.card_2.ditem_4.591b23e1QgFfQP&id=1056337216765",
+  "users": [
+    "陶赞"
+  ],
+  "index_url": "https://www.damai.cn/",
+  "login_url": "https://passport.damai.cn/login",
+  "city": "天津",
+  "dates": [
+    "2026.7.11"
+  ],
+  "prices": [
+    "298"
+  ],
+  "fast_mode": true,
+  "if_listen": true,
+  "if_commit_order": true,
+  "max_retries": 10000,
+  "page_load_delay": 2.0
+}
