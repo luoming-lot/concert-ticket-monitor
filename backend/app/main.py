@@ -30,16 +30,28 @@ app = FastAPI(
 )
 
 # CORS 中间件
+import os
+
+_origins = [
+    f"http://localhost:{settings.FRONTEND_PORT}",
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+]
+
+# prod/deploy: allow vercel & render preview domains
+_extra = os.getenv("EXTRA_CORS_ORIGINS", "")
+if _extra:
+    _origins.extend(o.strip() for o in _extra.split(",") if o.strip())
+
+_origins.append("https://*.vercel.app")  # Vercel preview deploys
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        f"http://localhost:{settings.FRONTEND_PORT}",
-        "http://127.0.0.1:5173",
-        "http://localhost:5173",
-    ],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_origin_regex=r"https://.*\.vercel\.app",
 )
 
 
