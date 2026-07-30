@@ -42,3 +42,6 @@ test-results/
 
 # OS
 Thumbs.db
+
+.vercel
+.env*
