@@ -103,11 +103,8 @@ npm run dev
 
 **5. 访问系统**
 
-| 环境 | 前端 | API 文档 |
-|------|------|----------|
-| 🌐 线上 | [frontend-jade-psi-51.vercel.app](https://frontend-jade-psi-51.vercel.app) | [backend-delta-six-95.vercel.app/docs](https://backend-delta-six-95.vercel.app/docs) |
-| 💻 本地 | http://localhost:5173 | http://localhost:8000/docs |
-
+- 🌐 前端：[frontend-jade-psi-51.vercel.app](https://frontend-jade-psi-51.vercel.app)
+- 📄 API 文档：[backend-delta-six-95.vercel.app/docs](https://backend-delta-six-95.vercel.app/docs)
 - 仓库：https://github.com/luoming-lot/concert-ticket-monitor
 - 默认账号：admin / admin123
 
