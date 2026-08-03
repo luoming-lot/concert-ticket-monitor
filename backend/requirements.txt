@@ -25,6 +25,9 @@ python-dotenv==1.0.1
 # HTTP 客户端
 httpx==0.28.1
 
+# 数据库驱动（云数据库 Postgres）
+psycopg2-binary==2.9.10
+
 # 认证
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4

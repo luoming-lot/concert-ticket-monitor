@@ -10,20 +10,25 @@ from sqlalchemy.pool import StaticPool
 from .config import settings, get_db_path
 
 
-# 确保数据目录存在（Vercel /tmp 目录已存在）
-import os as _os
-db_path = get_db_path()
-_is_vercel = bool(_os.getenv("VERCEL"))
-if not _is_vercel:
-    db_path.parent.mkdir(parents=True, exist_ok=True)
+# 数据库 URL 处理：SQLite 本地文件 / 云数据库（Postgres 等）
+_db_url = settings.DATABASE_URL
+_is_sqlite = _db_url.startswith("sqlite")
 
-# 创建引擎
-engine = create_engine(
-    f"sqlite:///{db_path.as_posix()}",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-    echo=settings.DEBUG,
-)
+if _is_sqlite:
+    db_path = get_db_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    engine = create_engine(
+        f"sqlite:///{db_path.as_posix()}",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        echo=settings.DEBUG,
+    )
+else:
+    engine = create_engine(
+        _db_url,
+        pool_pre_ping=True,
+        echo=settings.DEBUG,
+    )
 
 # 会话工厂
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
