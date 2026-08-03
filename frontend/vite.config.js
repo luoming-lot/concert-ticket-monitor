@@ -21,6 +21,17 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // GitHub Pages (Jekyll) skips underscore-prefixed files; avoid such names.
+        chunkFileNames: (chunkInfo) => {
+          const name = String(chunkInfo.name || 'chunk').replace(/^_+/, '')
+          return `assets/${name}-[hash].js`
+        },
+      },
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,
