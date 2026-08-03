@@ -2,7 +2,7 @@
 认证路由 - 登录/登出/用户信息
 """
 from datetime import datetime, timedelta
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel
 from jose import jwt
 
@@ -49,8 +49,11 @@ def create_token(username: str) -> str:
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
 
-def verify_token(token: str) -> dict:
-    """验证 JWT Token"""
+def verify_token(authorization: str = Header(default="")) -> dict:
+    """从 Authorization 请求头验证 JWT Token"""
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="缺少Token")
+    token = authorization[7:]
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         return payload

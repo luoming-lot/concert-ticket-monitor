@@ -19,7 +19,7 @@ if not _is_vercel:
 
 # 创建引擎
 engine = create_engine(
-    settings.DATABASE_URL,
+    f"sqlite:///{db_path.as_posix()}",
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
     echo=settings.DEBUG,
