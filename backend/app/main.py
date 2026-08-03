@@ -38,6 +38,7 @@ _origins = [
     "http://127.0.0.1:5173",
     "http://localhost:5173",
     "https://frontend-jade-psi-51.vercel.app",
+    "https://luoming-lot.github.io",
 ]
 
 # prod/deploy: allow vercel & render preview domains
@@ -51,7 +52,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex=r"https://.*\.(vercel\.app|github\.io)",
 )
 
 
